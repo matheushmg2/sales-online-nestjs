@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
+<<<<<<< Updated upstream
 import { ICreateUserDto } from './dtos/create.dto';
 import { UserEntity } from './interfaces/user.entity';
+=======
+import { CreateUserDto } from './dtos/create.dto';
+import { UserEntity } from './entities/user.entity';
+>>>>>>> Stashed changes
 import { hash } from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -13,7 +18,7 @@ export class UserService {
     ) { }
 
 
-    async create(user: ICreateUserDto): Promise<any> {
+    async create(user: CreateUserDto): Promise<any> {
 
         const saltOrRounds = 10;
 
