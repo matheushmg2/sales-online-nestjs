@@ -1,9 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CityEntity } from './entities/city.entity';
 import { Repository } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class CityService {
@@ -32,5 +33,24 @@ export class CityService {
         await this.cacheManager.set(`state_${stateId}`, cities);
 
         return cities;
+    }
+
+    async findCityById(cityId: string): Promise<CityEntity> {
+
+        if (!isUUID(cityId)) {
+            throw new BadRequestException('CityId Not Found');
+        }
+
+        const city = await this.cityRepository.findOne({
+            where: {
+                id: cityId,
+            },
+        });
+
+        if(!city) {
+            throw new NotFoundException('CityId Not Found');
+        }
+
+        return city;
     }
 }
