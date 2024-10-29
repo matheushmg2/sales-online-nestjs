@@ -18,7 +18,7 @@ export class UserDataDto {
         this.name = userEntity.name;
         this.email = userEntity.email;
         this.phone = userEntity.phone;
-        this.address = userEntity.addresses ? userEntity.addresses.map((data) => new AddressDataDto(data)) : null;
+        this.address = userEntity.addresses ? userEntity.addresses.map((data) => new AddressDataDto(data)) : undefined;
     }
 
     /**
