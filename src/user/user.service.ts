@@ -17,6 +17,21 @@ export class UserService {
         return this.userRepository.find();
     }
 
+    async getUserByIdUsingRelations(id: string): Promise<UserEntity> {
+        return this.userRepository.findOne({
+            where: {
+                id,
+            },
+            relations: {
+                addresses: {
+                    city: {
+                        state: true
+                    }
+                },
+            }
+        });
+    }
+
     async findUserById(userId: string): Promise<UserEntity> {
 
         if (!isUUID(userId)) {
