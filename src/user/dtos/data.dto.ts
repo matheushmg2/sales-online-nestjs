@@ -1,3 +1,4 @@
+import { AddressDataDto } from "../../address/dtos/data.dto";
 import { UserEntity } from "../entities/user.entity";
 
 export class UserDataDto {
@@ -10,9 +11,14 @@ export class UserDataDto {
     type_user: number;
     created_at: Date;
     updated_at: Date;
+    address?: AddressDataDto[];
 
     constructor(userEntity: UserEntity) {
         this.id = userEntity.id;
+        this.name = userEntity.name;
+        this.email = userEntity.email;
+        this.phone = userEntity.phone;
+        this.address = userEntity.addresses ? userEntity.addresses.map((data) => new AddressDataDto(data)) : null;
     }
 
     /**
@@ -41,5 +47,5 @@ export class UserDataDto {
             .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
     }
     */
-    
+
 }
