@@ -1,5 +1,5 @@
-import { AddressDataDto } from "../../address/dtos/data.dto";
-import { UserEntity } from "../entities/user.entity";
+import { AddressDataDto } from '../../address/dtos/data.dto';
+import { UserEntity } from '../entities/user.entity';
 
 export class UserDataDto {
     id: string;
@@ -18,7 +18,10 @@ export class UserDataDto {
         this.name = userEntity.name;
         this.email = userEntity.email;
         this.phone = userEntity.phone;
-        this.address = userEntity.addresses ? userEntity.addresses.map((data) => new AddressDataDto(data)) : undefined;
+        this.type_user = userEntity.type_user;
+        this.address = userEntity.addresses
+            ? userEntity.addresses.map((data) => new AddressDataDto(data))
+            : undefined;
     }
 
     /**
@@ -47,5 +50,4 @@ export class UserDataDto {
             .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
     }
     */
-
 }
