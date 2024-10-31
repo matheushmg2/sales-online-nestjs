@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dtos/create.dto';
 import { UserEntity } from './entities/user.entity';
 import { hash } from 'bcrypt';
@@ -11,7 +15,7 @@ export class UserService {
     constructor(
         @InjectRepository(UserEntity)
         private readonly userRepository: Repository<UserEntity>,
-    ) { }
+    ) {}
 
     async getAllUser(): Promise<UserEntity[]> {
         return this.userRepository.find();
@@ -25,15 +29,14 @@ export class UserService {
             relations: {
                 addresses: {
                     city: {
-                        state: true
-                    }
+                        state: true,
+                    },
                 },
-            }
+            },
         });
     }
 
     async findUserById(userId: string): Promise<UserEntity> {
-
         if (!isUUID(userId)) {
             throw new BadRequestException('UserId Not Found');
         }
@@ -44,7 +47,7 @@ export class UserService {
             },
         });
 
-        if(!user) {
+        if (!user) {
             throw new NotFoundException('UserId Not Found');
         }
 
@@ -52,35 +55,38 @@ export class UserService {
     }
 
     async findUserByEmail(email: string): Promise<UserEntity> {
-
         const user = await this.userRepository.findOne({
             where: {
                 email,
             },
         });
 
-        if(!user) {
+        if (!user) {
             throw new NotFoundException('E-mail Not Found');
         }
 
         return user;
     }
 
-
     async create(user: CreateUserDto): Promise<UserEntity> {
+        const isEmail = await this.findUserByEmail(user.email).catch(
+            () => undefined,
+        );
+
+        if (isEmail) {
+            throw new BadRequestException('E-mail registered in system');
+        }
 
         const saltOrRounds = 10;
 
-        const passwordHashed = await hash(user.password, saltOrRounds)
+        const passwordHashed = await hash(user.password, saltOrRounds);
 
         const typeUser = user.type_user ?? 0;
 
         return this.userRepository.save({
             ...user,
             type_user: typeUser,
-            password: passwordHashed
+            password: passwordHashed,
         });
     }
-
-    
 }
