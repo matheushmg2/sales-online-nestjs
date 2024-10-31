@@ -1,7 +1,7 @@
 import { IsDate, IsInt, IsString } from "class-validator";
 
 export class CreateUserDto {
-    id: string;
+    //id: string;
 
     @IsString()
     name: string;
@@ -21,7 +21,7 @@ export class CreateUserDto {
     @IsInt()
     type_user: number;
 
-    created_at: Date;
+    //created_at: Date;
 
-    updated_at: Date;
+    //updated_at: Date;
 }
