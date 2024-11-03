@@ -13,23 +13,29 @@ import { CreateAddressDto } from './dtos/create.dto';
 import { Roles } from '../decorators/roles.decorator';
 import { UserType } from '../user/enum/user-type.enum';
 import { UserId } from '../decorators/user-id.decorator';
+import { AddressDataDto } from './dtos/data.dto';
 
-@Roles(UserType.User)
 @Controller('address')
 export class AddressController {
     constructor(private readonly addressService: AddressService) {}
 
-    @Get()
-    async getAllAddress(): Promise<[]> {
-        return;
-    }
-
     @Post()
+    @Roles(UserType.User)
     @UsePipes(ValidationPipe)
     async create(
         @Body() createAddressDto: CreateAddressDto,
         @UserId() userId: string,
     ): Promise<AddressEntity> {
         return this.addressService.create(createAddressDto, userId);
+    }
+
+    @Get()
+    @Roles(UserType.User, UserType.Admin)
+    async findAddressByUserId(
+        @UserId() userId: string,
+    ): Promise<AddressDataDto[]> {
+        return (await this.addressService.findAddressByUserId(userId)).map(
+            (data) => new AddressDataDto(data),
+        );
     }
 }
