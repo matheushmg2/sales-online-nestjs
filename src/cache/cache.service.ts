@@ -11,7 +11,6 @@ export class CacheService {
     async getCache<T>(key: string, functionRequest: () => Promise<T>): Promise<T> {
         const allDateCache: T = await this.cacheManager.get(key);
 
-        // Se existe cidades em cache
         if (allDateCache) {
             return allDateCache;
         }
