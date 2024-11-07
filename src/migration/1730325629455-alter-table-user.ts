@@ -7,7 +7,6 @@ import {
 
 export class AlterTableUser1730325629455 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
-        // Adicionar a coluna type_user
         await queryRunner.changeColumn(
             'users',
             'type_user',
@@ -18,7 +17,6 @@ export class AlterTableUser1730325629455 implements MigrationInterface {
             }),
         );
     
-        // Verifique se a restrição já existe antes de criar
         const hasUniqueConstraint = await queryRunner.hasColumn('users', 'email');
     
         if (!hasUniqueConstraint) {
@@ -29,7 +27,7 @@ export class AlterTableUser1730325629455 implements MigrationInterface {
       }
     
       public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.dropUniqueConstraint('users', 'UQ_email'); // Ajuste conforme necessário
+        await queryRunner.dropUniqueConstraint('users', 'UQ_email');
         await queryRunner.dropColumn('users', 'type_user');
       }
 }
