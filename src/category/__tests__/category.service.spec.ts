@@ -64,7 +64,7 @@ describe('CategoryService', () => {
             );
         });
     });
-    describe('create', () => {
+    describe('create category', () => {
         it('should return category category after save', async () => {
             jest.spyOn(categoryRepository, 'findOne').mockResolvedValue(
                 undefined,
