@@ -9,6 +9,7 @@ import { hash } from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { isUUID } from 'class-validator';
+import { UserType } from './enum/user-type.enum';
 
 @Injectable()
 export class UserService {
@@ -81,11 +82,9 @@ export class UserService {
 
         const passwordHashed = await hash(user.password, saltOrRounds);
 
-        const typeUser = user.type_user ?? 0;
-
         return this.userRepository.save({
             ...user,
-            type_user: typeUser,
+            type_user: UserType.User,
             password: passwordHashed,
         });
     }

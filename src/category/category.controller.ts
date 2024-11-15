@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CategoryDataDto } from './dtos/data.dto';
 import { CategoryEntity } from './entities/category.entity';
@@ -20,6 +20,7 @@ export class CategoryController {
 
 
     @Roles(UserType.Admin)
+    @UsePipes(ValidationPipe)
     @Post()
     async create(
         @Body() create: CreateCategoryDto
