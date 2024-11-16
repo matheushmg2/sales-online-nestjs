@@ -6,6 +6,11 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { userEntityMock } from '../__mocks__/user.mock';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { createUserMock } from '../__mocks__/create-user.mock';
+import { hashedPassword, validatePassword } from '../../utils/isValidePassword';
+import {
+    updatePasswordUserInvalidMock,
+    updatePasswordUserMock,
+} from '../__mocks__/update-password-user.mock';
 
 describe('UserService', () => {
     let service: UserService;
@@ -135,6 +140,36 @@ describe('UserService', () => {
                 new NotFoundException(),
             );
             expect(service.getAllUser()).rejects.toThrow(NotFoundException);
+        });
+    });
+
+    describe('updatePassword', () => {
+        it('should update password successfully', async () => {
+            const user = await service.updatePassword(
+                updatePasswordUserMock,
+                userEntityMock.id,
+            );
+            expect(user).toEqual(userEntityMock);
+        });
+
+        it('should return invalid password in error', async () => {
+            expect(
+                service.updatePassword(
+                    updatePasswordUserInvalidMock,
+                    userEntityMock.id,
+                ),
+            ).rejects.toThrow(BadRequestException);
+        });
+
+        it('should throw NotFoundException in user not exist', async () => {
+            jest.spyOn(userRepository, 'findOne').mockResolvedValueOnce(undefined);
+
+            await expect(
+                service.updatePassword(
+                    updatePasswordUserMock,
+                    userEntityMock.id,
+                ),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 });
