@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthDataDto } from './dtos/data.dto';
 import { UserDataDto } from '../user/dtos/data.dto';
 import { PayloadDataDto } from './dtos/payload.dto';
+import { validatePassword } from '../utils/isValidePassword';
 
 @Injectable()
 export class AuthService {
@@ -19,7 +20,7 @@ export class AuthService {
     async login(login: LoginAuthDto): Promise<AuthDataDto> {
         const user: UserEntity | undefined = await this.userService.findUserByEmail(login.email).catch(() => undefined);
 
-        const isMatch = await compare(login.password, user?.password || '');
+        const isMatch = await validatePassword(login.password, user?.password || '');
 
         if (!user || !isMatch) {
             throw new NotFoundException('E-mail or password invalid');

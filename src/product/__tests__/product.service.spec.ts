@@ -9,6 +9,7 @@ import { productEntityMock, returnDeleteMock } from '../__mocks__/product.mock';
 import { categoryEntityMock } from '../../category/__mocks__/category.mock';
 import { CreateProductDto } from '../dtos/create.dto';
 import { CategoryEntity } from '../../category/entities/category.entity';
+import { UpdateProductDto } from '../dtos/update.dto';
 
 describe('ProductService', () => {
     let service: ProductService;
@@ -98,71 +99,143 @@ describe('ProductService', () => {
     });
 
     describe('create', () => {
-      it('should create and return a new product', async () => {
-          const categoryEntityMock: CategoryEntity = {
-            id: '1',
-            name: 'Mock Category',
-            createdAt: new Date(),
-            updatedAt: new Date()
-          };
-  
-          const createProductDto: CreateProductDto = {
-              categoryId: categoryEntityMock.id,
-              image: 'mock-image-url',
-              name: 'Mock Product',
-              price: 25.0,
-          };
-  
-          const newProduct = {
-              id: '1',
-              ...createProductDto,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-          };
-  
-          jest.spyOn(categoryService, 'findCategoryById').mockResolvedValue(
-              categoryEntityMock,
-          );
-  
-          jest.spyOn(productRepository, 'save').mockResolvedValue(newProduct);
-  
-          const result = await service.create(createProductDto);
-  
-          expect(result).toEqual(newProduct);
-          expect(categoryService.findCategoryById).toHaveBeenCalledWith(
-              createProductDto.categoryId,
-          );
-          expect(productRepository.save).toHaveBeenCalledWith({
-              ...createProductDto,
-          });
-      });
-  });
+        it('should create and return a new product', async () => {
+            const categoryEntityMock: CategoryEntity = {
+                id: '1',
+                name: 'Mock Category',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
 
-  describe('delete', () => {
-    it('should delete a product by ID', async () => {
-        const productMock: ProductEntity = {
-            id: '1',
-            name: 'Test Product',
-            categoryId: '1',
-            price: 100,
-            image: 'image-url',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        };
+            const createProductDto: CreateProductDto = {
+                categoryId: categoryEntityMock.id,
+                image: 'mock-image-url',
+                name: 'Mock Product',
+                price: 25.0,
+            };
 
-        const deleteResultMock: DeleteResult = {
-            raw: {},
-            affected: 1,
-        };
+            const newProduct = {
+                id: '1',
+                ...createProductDto,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
 
-        jest.spyOn(service, 'findProductById').mockResolvedValue(productMock);
-        jest.spyOn(productRepository, 'delete').mockResolvedValue(deleteResultMock);
+            jest.spyOn(categoryService, 'findCategoryById').mockResolvedValue(
+                categoryEntityMock,
+            );
 
-        const result = await service.delete('1');
-        expect(result).toEqual(deleteResultMock);
-        expect(service.findProductById).toHaveBeenCalledWith('1');
-        expect(productRepository.delete).toHaveBeenCalledWith({ id: '1' });
+            jest.spyOn(productRepository, 'save').mockResolvedValue(newProduct);
+
+            const result = await service.create(createProductDto);
+
+            expect(result).toEqual(newProduct);
+            expect(categoryService.findCategoryById).toHaveBeenCalledWith(
+                createProductDto.categoryId,
+            );
+            expect(productRepository.save).toHaveBeenCalledWith({
+                ...createProductDto,
+            });
+        });
     });
-});
 
+    describe('update', () => {
+        it('should update and return the updated product', async () => {
+            const productMock: ProductEntity = {
+                id: '1',
+                name: 'Original Product',
+                categoryId: '1',
+                price: 100,
+                image: 'original-image-url',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
+
+            const updateProductDto: UpdateProductDto = {
+              name: 'Updated Product',
+              price: 150,
+              image: 'updated-image-url',
+              categoryId: '1',
+            };
+
+            const updatedProductMock: ProductEntity = {
+                ...productMock,
+                ...updateProductDto,
+                updatedAt: new Date(),
+            };
+
+            // Mock do `findProductById`
+            jest.spyOn(service, 'findProductById').mockResolvedValue(
+                productMock,
+            );
+
+            // Mock do `save`
+            jest.spyOn(productRepository, 'save').mockResolvedValue(
+                updatedProductMock,
+            );
+
+            const result = await service.update(updateProductDto, '1');
+
+            expect(result).toEqual(updatedProductMock);
+            expect(service.findProductById).toHaveBeenCalledWith('1');
+            expect(productRepository.save).toHaveBeenCalledWith({
+                ...productMock,
+                ...updateProductDto,
+            });
+        });
+
+        it('should throw NotFoundException if the product is not found', async () => {
+          const updateProductDto: UpdateProductDto = {
+            name: 'Updated Product',
+            price: 150,
+            image: 'updated-image-url',
+            categoryId: '1'
+          };
+  
+          // Mock do `findProductById` para lançar a exceção
+          jest.spyOn(service, 'findProductById').mockImplementation(() => {
+              throw new NotFoundException('Product not found');
+          });
+  
+          // Verifica se o método lança a exceção ao tentar atualizar
+          await expect(service.update(updateProductDto, '1')).rejects.toThrow(NotFoundException);
+  
+          // Verifica se `findProductById` foi chamado corretamente
+          expect(service.findProductById).toHaveBeenCalledWith('1');
+  
+          // Verifica que o repositório `save` não foi chamado
+          expect(productRepository.save).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('delete', () => {
+        it('should delete a product by ID', async () => {
+            const productMock: ProductEntity = {
+                id: '1',
+                name: 'Test Product',
+                categoryId: '1',
+                price: 100,
+                image: 'image-url',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
+
+            const deleteResultMock: DeleteResult = {
+                raw: {},
+                affected: 1,
+            };
+
+            jest.spyOn(service, 'findProductById').mockResolvedValue(
+                productMock,
+            );
+            jest.spyOn(productRepository, 'delete').mockResolvedValue(
+                deleteResultMock,
+            );
+
+            const result = await service.delete('1');
+            expect(result).toEqual(deleteResultMock);
+            expect(service.findProductById).toHaveBeenCalledWith('1');
+            expect(productRepository.delete).toHaveBeenCalledWith({ id: '1' });
+        });
+    });
 });

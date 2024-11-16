@@ -10,6 +10,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { isUUID } from 'class-validator';
 import { UserType } from './enum/user-type.enum';
+import { UpdatePasswordUserDto } from './dtos/update-password.dto';
+import { hashedPassword, validatePassword } from '../utils/isValidePassword';
 
 @Injectable()
 export class UserService {
@@ -80,11 +82,31 @@ export class UserService {
 
         const saltOrRounds = 10;
 
-        const passwordHashed = await hash(user.password, saltOrRounds);
+        const passwordHashed = await hashedPassword(user.password);
 
         return this.userRepository.save({
             ...user,
             type_user: UserType.User,
+            password: passwordHashed,
+        });
+    }
+
+    
+
+    async updatePassword(data: UpdatePasswordUserDto, userId: string): Promise<UserEntity> {
+        const user = await this.findUserById(userId);
+
+        const passwordHashed = await hashedPassword(data.newPassword);
+
+        const isMatch = await validatePassword(data.lastPassword, user.password || '');
+
+        if(!isMatch) {
+            throw new BadRequestException('Last password invalid');
+        }
+        
+
+        return this.userRepository.save({
+            ...user,
             password: passwordHashed,
         });
     }
