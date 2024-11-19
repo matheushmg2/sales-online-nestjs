@@ -1,8 +1,13 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryEntity } from './entities/category.entity';
 import { Repository } from 'typeorm';
 import { CreateCategoryDto } from './dtos/create.dto';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class CategoryService {
@@ -24,8 +29,8 @@ export class CategoryService {
     async findCategoryByName(name: string): Promise<CategoryEntity> {
         const categories = await this.categoryRepository.findOne({
             where: {
-                name
-            }
+                name,
+            },
         });
 
         if (!categories) {
@@ -36,10 +41,13 @@ export class CategoryService {
     }
 
     async findCategoryById(id: string): Promise<CategoryEntity> {
+        if (!isUUID(id)) {
+            throw new BadRequestException('Category Not Found');
+        }
         const categories = await this.categoryRepository.findOne({
             where: {
-                id
-            }
+                id,
+            },
         });
 
         if (!categories) {
@@ -50,8 +58,9 @@ export class CategoryService {
     }
 
     async create(category: CreateCategoryDto): Promise<CategoryEntity> {
-
-        const categories = await this.findCategoryByName(category.name).catch(() => undefined);
+        const categories = await this.findCategoryByName(category.name).catch(
+            () => undefined,
+        );
 
         if (categories) {
             throw new BadRequestException('Category exist');

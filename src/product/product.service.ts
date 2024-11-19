@@ -1,10 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductEntity } from './entities/product.entity';
 import { DeleteResult, Repository } from 'typeorm';
 import { CreateProductDto } from './dtos/create.dto';
 import { CategoryService } from '../category/category.service';
 import { UpdateProductDto } from './dtos/update.dto';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class ProductService {
@@ -25,6 +30,10 @@ export class ProductService {
     }
 
     async findProductById(id: string): Promise<ProductEntity> {
+        if (!isUUID(id)) {
+            throw new BadRequestException('Product Not Found');
+        }
+
         const product = await this.productRepository.findOne({
             where: {
                 id,
