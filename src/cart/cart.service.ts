@@ -17,7 +17,7 @@ const LINE_AFFECTED = 1;
 export class CartService {
     constructor(
         @InjectRepository(CartEntity)
-        private readonly cartRespository: Repository<CartEntity>,
+        private readonly cartRepository: Repository<CartEntity>,
         private readonly cartProductService: CartProductService,
     ) {}
 
@@ -33,7 +33,7 @@ export class CartService {
               }
             : undefined;
 
-        const cart = await this.cartRespository.findOne({
+        const cart = await this.cartRepository.findOne({
             where: {
                 userId,
                 active: true,
@@ -49,7 +49,7 @@ export class CartService {
     }
 
     async create(userId: string): Promise<CartEntity> {
-        return await this.cartRespository.save({
+        return await this.cartRepository.save({
             active: true,
             userId,
         });
@@ -83,12 +83,12 @@ export class CartService {
 
     async clearCart(userId: string): Promise<DeleteResult> {
         if (!isUUID(userId)) {
-            throw new BadRequestException('User Not Found');
+            throw new BadRequestException('Cart Not Found');
         }
 
         const cart = await this.findCartByUserId(userId);
 
-        await this.cartRespository.save({
+        await this.cartRepository.save({
             ...cart,
             active: false,
         });
@@ -104,7 +104,7 @@ export class CartService {
         userId: string,
     ): Promise<DeleteResult> {
         if (!isUUID(userId)) {
-            throw new BadRequestException('User Not Found');
+            throw new BadRequestException('Cart Not Found');
         }
 
         const cart = await this.findCartByUserId(userId);

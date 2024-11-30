@@ -4,12 +4,13 @@ import { DeleteResult, Repository } from 'typeorm';
 import { ProductEntity } from '../entities/product.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { CategoryService } from '../../category/category.service';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { productEntityMock, returnDeleteMock } from '../__mocks__/product.mock';
 import { categoryEntityMock } from '../../category/__mocks__/category.mock';
 import { CreateProductDto } from '../dtos/create.dto';
 import { CategoryEntity } from '../../category/entities/category.entity';
 import { UpdateProductDto } from '../dtos/update.dto';
+import { v4 as uuidv4 } from 'uuid';
 
 describe('ProductService', () => {
     let service: ProductService;
@@ -82,17 +83,17 @@ describe('ProductService', () => {
                 productEntityMock,
             );
 
-            const result = await service.findProductById('1');
+            const result = await service.findProductById(productEntityMock.id);
             expect(result).toEqual(productEntityMock);
             expect(productRepository.findOne).toHaveBeenCalledWith({
-                where: { id: '1' },
+                where: { id: productEntityMock.id },
             });
         });
 
         it('should throw NotFoundException if product is not found', async () => {
             jest.spyOn(productRepository, 'findOne').mockResolvedValue(null);
 
-            await expect(service.findProductById('1')).rejects.toThrow(
+            await expect(service.findProductById(productEntityMock.id)).rejects.toThrow(
                 NotFoundException,
             );
         });
@@ -152,10 +153,10 @@ describe('ProductService', () => {
             };
 
             const updateProductDto: UpdateProductDto = {
-              name: 'Updated Product',
-              price: 150,
-              image: 'updated-image-url',
-              categoryId: '1',
+                name: 'Updated Product',
+                price: 150,
+                image: 'updated-image-url',
+                categoryId: '1',
             };
 
             const updatedProductMock: ProductEntity = {
@@ -164,12 +165,10 @@ describe('ProductService', () => {
                 updatedAt: new Date(),
             };
 
-            // Mock do `findProductById`
             jest.spyOn(service, 'findProductById').mockResolvedValue(
                 productMock,
             );
 
-            // Mock do `save`
             jest.spyOn(productRepository, 'save').mockResolvedValue(
                 updatedProductMock,
             );
@@ -185,27 +184,25 @@ describe('ProductService', () => {
         });
 
         it('should throw NotFoundException if the product is not found', async () => {
-          const updateProductDto: UpdateProductDto = {
-            name: 'Updated Product',
-            price: 150,
-            image: 'updated-image-url',
-            categoryId: '1'
-          };
-  
-          // Mock do `findProductById` para lançar a exceção
-          jest.spyOn(service, 'findProductById').mockImplementation(() => {
-              throw new NotFoundException('Product not found');
-          });
-  
-          // Verifica se o método lança a exceção ao tentar atualizar
-          await expect(service.update(updateProductDto, '1')).rejects.toThrow(NotFoundException);
-  
-          // Verifica se `findProductById` foi chamado corretamente
-          expect(service.findProductById).toHaveBeenCalledWith('1');
-  
-          // Verifica que o repositório `save` não foi chamado
-          expect(productRepository.save).not.toHaveBeenCalled();
-      });
+            const updateProductDto: UpdateProductDto = {
+                name: 'Updated Product',
+                price: 150,
+                image: 'updated-image-url',
+                categoryId: '1',
+            };
+
+            jest.spyOn(service, 'findProductById').mockImplementation(() => {
+                throw new NotFoundException('Product not found');
+            });
+
+            await expect(service.update(updateProductDto, '1')).rejects.toThrow(
+                NotFoundException,
+            );
+
+            expect(service.findProductById).toHaveBeenCalledWith('1');
+
+            expect(productRepository.save).not.toHaveBeenCalled();
+        });
     });
 
     describe('delete', () => {

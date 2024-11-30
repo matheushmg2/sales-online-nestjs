@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryEntity } from './entities/category.entity';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { CreateCategoryDto } from './dtos/create.dto';
 import { isUUID } from 'class-validator';
 
@@ -40,14 +40,26 @@ export class CategoryService {
         return categories;
     }
 
-    async findCategoryById(id: string): Promise<CategoryEntity> {
+    async findCategoryById(
+        id: string,
+        isRelations?: boolean,
+    ): Promise<CategoryEntity> {
         if (!isUUID(id)) {
             throw new BadRequestException('Category Not Found');
         }
+        
+        const relations = isRelations
+        ? {
+            products: true,
+          }
+        : undefined;
+
+
         const categories = await this.categoryRepository.findOne({
             where: {
                 id,
             },
+            relations,
         });
 
         if (!categories) {
@@ -69,5 +81,19 @@ export class CategoryService {
         return this.categoryRepository.save({
             ...category,
         });
+    }
+
+    async delete(id: string): Promise<DeleteResult> {
+        if (!isUUID(id)) {
+            throw new BadRequestException('Category Not Found');
+        }
+
+        const category = await this.findCategoryById(id, true);
+
+        if (category.products?.length > 0) {
+            throw new BadRequestException('Category with relations.');
+        }
+
+        return this.categoryRepository.delete({ id });
     }
 }
