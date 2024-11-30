@@ -16,7 +16,7 @@ import { UpdateCartDto } from '../cart/dto/update-cart.dto';
 export class CartProductService {
     constructor(
         @InjectRepository(CartProductEntity)
-        private readonly cartProductRespository: Repository<CartProductEntity>,
+        private readonly cartProductRepository: Repository<CartProductEntity>,
         private readonly productService: ProductService,
     ) {}
 
@@ -28,7 +28,7 @@ export class CartProductService {
             throw new BadRequestException('Cart or Product Not Found');
         }
 
-        const cartProduct = await this.cartProductRespository.findOne({
+        const cartProduct = await this.cartProductRepository.findOne({
             where: {
                 product_id,
                 cart_id,
@@ -58,7 +58,7 @@ export class CartProductService {
             );
         }
 
-        return await this.cartProductRespository.save({
+        return await this.cartProductRepository.save({
             amount: createCartDto.amount,
             product_id: createCartDto.productId,
             cart_id,
@@ -88,7 +88,7 @@ export class CartProductService {
             return await this.create(createCartDto, cart.id);
         }
 
-        return this.cartProductRespository.save({
+        return this.cartProductRepository.save({
             ...cartProduct,
             amount: cartProduct.amount + createCartDto.amount,
         });
@@ -113,7 +113,7 @@ export class CartProductService {
             );
         }
 
-        return this.cartProductRespository.save({
+        return this.cartProductRepository.save({
             ...cartProduct,
             amount: updateCartDto.amount,
         });
@@ -123,7 +123,7 @@ export class CartProductService {
         product_id: string,
         cart_id: string,
     ): Promise<DeleteResult> {
-        return await this.cartProductRespository.delete({
+        return await this.cartProductRepository.delete({
             product_id,
             cart_id,
         });

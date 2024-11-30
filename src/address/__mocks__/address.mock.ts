@@ -26,3 +26,11 @@ export const addressEntityMock: AddressEntity = {
     createdAt: new Date(),
     updatedAt: new Date()
 };
+
+export const AddressCreateDto: any = {
+    userId: uuidv4(),
+    complement: "home",
+    number: 0,
+    cep: "12340000",
+    cityId: uuidv4(),
+};

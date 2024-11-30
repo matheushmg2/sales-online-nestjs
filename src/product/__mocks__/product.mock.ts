@@ -5,7 +5,7 @@ import { categoryEntityMock } from '../../category/__mocks__/category.mock';
 import { DeleteResult } from 'typeorm';
 
 export const productEntityMock: ProductEntity = {
-    id: '1',
+    id: uuidv4(),
     categoryId: categoryEntityMock.id,
     name: 'name product mock',
     price: 10,
