@@ -17,7 +17,7 @@
         "controller": "nest g controller",
         "service": "nest g service",
         "resource": "nest g resource",
-        "migration:create": "npx ts-node ./scripts/create-migration.ts",
+        "migration": "npx ts-node ./scripts/create-migration.ts",
         "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
         "test": "jest",
         "test:watch": "jest --watch",
