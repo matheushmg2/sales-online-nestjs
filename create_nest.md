@@ -7,3 +7,10 @@ Para criar service
 
 Para criar module
 -> nest g module address
+
+## --------------------------------
+# Migrate
+
+yarn migration create test
+yarn migration insert test
+yarn migration alter test
