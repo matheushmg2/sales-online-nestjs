@@ -80,8 +80,6 @@ export class UserService {
             throw new BadRequestException('E-mail registered in system');
         }
 
-        const saltOrRounds = 10;
-
         const passwordHashed = await hashedPassword(user.password);
 
         return this.userRepository.save({

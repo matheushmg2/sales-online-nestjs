@@ -11,6 +11,8 @@ const config: TypeOrmModuleOptions = {
     //synchronize: true,
     entities: [__dirname + '/../**/*.entity.{js,ts}'],
     migrations: [__dirname + '/../migration/*.{js,ts}'],
-    migrationsRun: true
+    migrationsRun: true,
+    //logging: true,
+    /*synchronize: true*/
 };
 export const typeOrmConfig = config;
