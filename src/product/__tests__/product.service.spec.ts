@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductService } from '../product.service';
-import { DeleteResult, Repository } from 'typeorm';
+import { DeleteResult, In, Repository } from 'typeorm';
 import { ProductEntity } from '../entities/product.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { CategoryService } from '../../category/category.service';
@@ -68,6 +68,48 @@ describe('ProductService', () => {
             expect(productRepository.find).toHaveBeenCalledTimes(1);
         });
 
+        it('should return relations in find all products', async () => {
+            const spy = jest
+                .spyOn(productRepository, 'find')
+                .mockResolvedValue({
+                    ...productEntityMock,
+                } as any);
+
+            const result = await service.findAllProduct([], true);
+            expect(result).toEqual(productEntityMock);
+
+            expect(spy.mock.calls[0][0]).toEqual({
+                relations: {
+                    categories: true,
+                },
+            });
+            expect(productRepository.find).toHaveBeenCalledTimes(1);
+        });
+
+        it('should return relations and array in find all products', async () => {
+            const spy = jest
+                .spyOn(productRepository, 'find')
+                .mockResolvedValue({
+                    ...productEntityMock,
+                } as any);
+
+            const result = await service.findAllProduct(
+                ['b3c91137-0122-43c2-9fc0-713392f97525'],
+                true,
+            );
+            expect(result).toEqual(productEntityMock);
+
+            expect(spy.mock.calls[0][0]).toEqual({
+                where: {
+                    id: In(['b3c91137-0122-43c2-9fc0-713392f97525']),
+                },
+                relations: {
+                    categories: true,
+                },
+            });
+            expect(productRepository.find).toHaveBeenCalledTimes(1);
+        });
+
         it('should throw NotFoundException if no products are found', async () => {
             jest.spyOn(productRepository, 'find').mockResolvedValue([]);
 
@@ -93,9 +135,9 @@ describe('ProductService', () => {
         it('should throw NotFoundException if product is not found', async () => {
             jest.spyOn(productRepository, 'findOne').mockResolvedValue(null);
 
-            await expect(service.findProductById(productEntityMock.id)).rejects.toThrow(
-                NotFoundException,
-            );
+            await expect(
+                service.findProductById(productEntityMock.id),
+            ).rejects.toThrow(NotFoundException);
         });
     });
 

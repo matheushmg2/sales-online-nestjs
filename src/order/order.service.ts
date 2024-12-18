@@ -24,7 +24,7 @@ export class OrderService {
         private readonly productService: ProductService,
     ) {}
 
-    async savaOrder(
+    async saveOrder(
         userId: string,
         createOrderDto: CreateOrderDto,
         payment: PaymentEntity,
@@ -72,7 +72,7 @@ export class OrderService {
             cart,
         );
 
-        const order = await this.savaOrder(userId, createOrderDto, payment);
+        const order = await this.saveOrder(userId, createOrderDto, payment);
 
         await this.createOrderProductUsingCart(cart, order.id, products);
 
