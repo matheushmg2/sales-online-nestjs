@@ -1,4 +1,10 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import {
+    Injectable,
+    CanActivate,
+    ExecutionContext,
+    UnauthorizedException,
+    ForbiddenException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { UserType } from '../user/enum/user-type.enum';
 import { ROLES_KEY } from '../decorators/roles.decorator';
@@ -11,7 +17,7 @@ export class RolesGuard implements CanActivate {
     constructor(
         private reflector: Reflector,
         private readonly jwtService: JwtService,
-    ) { }
+    ) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const requiredRoles = this.reflector.getAllAndOverride<UserType[]>(
@@ -29,10 +35,22 @@ export class RolesGuard implements CanActivate {
             .verifyAsync(authorization, { secret: process.env.JWT_SECRET })
             .catch(() => undefined);
 
-        if(!loginPayload) {
-            return false
+        if (!loginPayload) {
+            throw new UnauthorizedException(
+                'Invalid or expired authorization token',
+            );
         }
-        
-        return requiredRoles.some((role) => role === loginPayload.type_user);
+
+        const hasRole = requiredRoles.some(
+            (role) => role === loginPayload.type_user,
+        );
+
+        if (!hasRole) {
+            throw new ForbiddenException(
+                'You do not have the necessary permissions to access this resource',
+            );
+        }
+
+        return hasRole;
     }
 }

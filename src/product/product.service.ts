@@ -19,15 +19,36 @@ export class ProductService {
         private readonly categoryService: CategoryService,
     ) {}
 
-    async findAllProduct(productId?: string[]): Promise<ProductEntity[]> {
-        let findOptions = {}
+    async findAllProduct(
+        productId?: string[],
+        isFindRelations?: boolean,
+    ): Promise<ProductEntity[]> {
+        if (productId) {
+            const invalidIds = productId.filter(id => !isUUID(id));
+            if (invalidIds.length > 0) {
+                throw new BadRequestException(
+                    `Invalid UUIDs Not found products`,
+                );
+            }
+        }
 
-        if(productId && productId.length > 0) {
+        let findOptions = {};
+
+        if (productId && productId.length > 0) {
             findOptions = {
                 where: {
-                    id: In(productId)
+                    id: In(productId),
+                },
+            };
+        }
+
+        if (isFindRelations) {
+            findOptions = {
+                ...findOptions,
+                relations: {
+                    categories: true
                 }
-            }
+            };
         }
 
         const products = await this.productRepository.find(findOptions);

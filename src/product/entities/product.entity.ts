@@ -40,7 +40,7 @@ export class ProductEntity {
         (category: CategoryEntity) => category.products,
     )
     @JoinColumn({ name: 'category_id', referencedColumnName: 'id' })
-    categories?: CategoryEntity[];
+    categories?: CategoryEntity;
 
     @OneToMany(() => CartProductEntity, (cartProduct) => cartProduct.products)
     cartProduct?: CartProductEntity[];
