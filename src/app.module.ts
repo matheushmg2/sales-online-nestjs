@@ -17,6 +17,7 @@ import { CartModule } from './cart/cart.module';
 import { CartProductModule } from './cart-product/cart-product.module';
 import { OrderModule } from './order/order.module';
 import { OrderProductModule } from './order-product/order-product.module';
+import { CorreiosModule } from './correios/correios.module';
 
 @Module({
   imports: [
@@ -36,7 +37,8 @@ import { OrderProductModule } from './order-product/order-product.module';
     CartModule,
     CartProductModule,
     OrderModule,
-    OrderProductModule
+    OrderProductModule,
+    CorreiosModule
   ],
   controllers: [],
   providers: [
