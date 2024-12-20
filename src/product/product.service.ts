@@ -1,5 +1,7 @@
 import {
     BadRequestException,
+    forwardRef,
+    Inject,
     Injectable,
     NotFoundException,
 } from '@nestjs/common';
@@ -10,12 +12,15 @@ import { CreateProductDto } from './dtos/create.dto';
 import { CategoryService } from '../category/category.service';
 import { UpdateProductDto } from './dtos/update.dto';
 import { isUUID } from 'class-validator';
+import { CountProduct } from './dtos/count-product.dto';
 
 @Injectable()
 export class ProductService {
     constructor(
         @InjectRepository(ProductEntity)
         private readonly productRepository: Repository<ProductEntity>,
+
+        @Inject(forwardRef(() => CategoryService))
         private readonly categoryService: CategoryService,
     ) {}
 
@@ -24,7 +29,7 @@ export class ProductService {
         isFindRelations?: boolean,
     ): Promise<ProductEntity[]> {
         if (productId) {
-            const invalidIds = productId.filter(id => !isUUID(id));
+            const invalidIds = productId.filter((id) => !isUUID(id));
             if (invalidIds.length > 0) {
                 throw new BadRequestException(
                     `Invalid UUIDs Not found products`,
@@ -46,8 +51,8 @@ export class ProductService {
             findOptions = {
                 ...findOptions,
                 relations: {
-                    categories: true
-                }
+                    categories: true,
+                },
             };
         }
 
@@ -76,6 +81,14 @@ export class ProductService {
         }
 
         return product;
+    }
+
+    async countProductsByCategoryId(): Promise<CountProduct[]> {
+        return await this.productRepository
+            .createQueryBuilder('product')
+            .select('product.category_id, COUNT(*) as total')
+            .groupBy('product.category_id')
+            .getRawMany();
     }
 
     async create(product: CreateProductDto): Promise<ProductEntity> {

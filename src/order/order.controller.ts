@@ -14,6 +14,9 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { UserId } from '../decorators/user-id.decorator';
 import { OrderEntity } from './entities/order.entity';
+import { Roles } from '../decorators/roles.decorator';
+import { UserType } from '../user/enum/user-type.enum';
+import { OrderDataDto } from './dto/data.dto';
 
 @Controller('order')
 export class OrderController {
@@ -29,7 +32,25 @@ export class OrderController {
     }
 
     @Get()
-    async findOrderByUserId(@UserId() userId: string) {
+    async findOrderByUserId(@UserId() userId: string): Promise<OrderEntity[]> {
         return this.orderService.findOrderByUserId(userId);
+    }
+
+    @Roles(UserType.Admin)
+    @Get('/all')
+    async findAllOrder(): Promise<OrderDataDto[]> {
+        return (await this.orderService.findAllOrders()).map(
+            (order) => new OrderDataDto(order),
+        );
+    }
+
+    @Roles(UserType.Admin)
+    @Get('/:orderId')
+    async findOrderById(
+        @Param('orderId') orderId: string,
+    ): Promise<OrderDataDto> {
+        return new OrderDataDto(
+            (await this.orderService.findOrderByUserId(undefined, orderId))[0],
+        );
     }
 }
