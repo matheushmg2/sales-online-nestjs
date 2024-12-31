@@ -20,7 +20,7 @@ export class AddressController {
     constructor(private readonly addressService: AddressService) {}
 
     @Post()
-    @Roles(UserType.User, UserType.Admin)
+    @Roles(UserType.User, UserType.Admin, UserType.Root)
     @UsePipes(ValidationPipe)
     async create(
         @Body() createAddressDto: CreateAddressDto,
@@ -30,7 +30,7 @@ export class AddressController {
     }
 
     @Get()
-    @Roles(UserType.User, UserType.Admin)
+    @Roles(UserType.User, UserType.Admin, UserType.Root)
     async findAddressByUserId(
         @UserId() userId: string,
     ): Promise<AddressDataDto[]> {

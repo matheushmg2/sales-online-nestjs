@@ -71,7 +71,8 @@ export class UserService {
         return user;
     }
 
-    async create(user: CreateUserDto): Promise<UserEntity> {
+    async create(user: CreateUserDto, typeUser?: boolean): Promise<UserEntity> {
+
         const isEmail = await this.findUserByEmail(user.email).catch(
             () => undefined,
         );
@@ -84,7 +85,7 @@ export class UserService {
 
         return this.userRepository.save({
             ...user,
-            type_user: UserType.User,
+            type_user: typeUser ? UserType.Admin : UserType.User,
             password: passwordHashed,
         });
     }

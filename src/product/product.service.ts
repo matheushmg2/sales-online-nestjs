@@ -7,12 +7,16 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductEntity } from './entities/product.entity';
-import { DeleteResult, In, Repository } from 'typeorm';
+import { DeleteResult, ILike, In, Repository } from 'typeorm';
 import { CreateProductDto } from './dtos/create.dto';
 import { CategoryService } from '../category/category.service';
 import { UpdateProductDto } from './dtos/update.dto';
 import { isUUID } from 'class-validator';
 import { CountProduct } from './dtos/count-product.dto';
+import { Pagination, PaginationMeta } from '../pagination/pagination.dto';
+
+const DEFAULT_PAGE_SIZE = 10;
+const FIRST_PAGE = 1;
 
 @Injectable()
 export class ProductService {
@@ -65,15 +69,56 @@ export class ProductService {
         return products;
     }
 
-    async findProductById(id: string): Promise<ProductEntity> {
+    async findAllPage(
+        search?: string,
+        size = DEFAULT_PAGE_SIZE,
+        page = FIRST_PAGE,
+      ): Promise<Pagination<ProductEntity[]>> {
+        const skip = (page - 1) * size;
+        let findOptions = {};
+        if (search) {
+          findOptions = {
+            where: {
+              name: ILike(`%${search}%`),
+            },
+          };
+        }
+        const [products, total] = await this.productRepository.findAndCount({
+          ...findOptions,
+          take: size,
+          skip,
+        });
+    
+        return new Pagination(
+          new PaginationMeta(
+            Number(size),
+            total,
+            Number(page),
+            Math.ceil(total / size),
+          ),
+          products,
+        );
+      }
+
+    async findProductById(
+        id: string,
+        isRelactions?: boolean,
+    ): Promise<ProductEntity> {
         if (!isUUID(id)) {
             throw new BadRequestException('Product Not Found');
         }
+
+        const relations = isRelactions
+            ? {
+                  categories: true,
+              }
+            : undefined;
 
         const product = await this.productRepository.findOne({
             where: {
                 id,
             },
+            relations,
         });
 
         if (!product) {
@@ -103,6 +148,9 @@ export class ProductService {
         data: UpdateProductDto,
         productId: string,
     ): Promise<ProductEntity> {
+        if (!isUUID(productId)) {
+            throw new BadRequestException('Product Not Found');
+        }
         const product = await this.findProductById(productId);
 
         return this.productRepository.save({
@@ -112,6 +160,9 @@ export class ProductService {
     }
 
     async delete(id: string): Promise<DeleteResult> {
+        if (!isUUID(id)) {
+            throw new BadRequestException('Product Not Found');
+        }
         const product = await this.findProductById(id);
 
         return this.productRepository.delete({ id: product.id });

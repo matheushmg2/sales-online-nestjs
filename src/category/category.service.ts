@@ -11,6 +11,7 @@ import { isUUID } from 'class-validator';
 import { ProductService } from '../product/product.service';
 import { CategoryDataDto } from './dtos/data.dto';
 import { CountProduct } from '../product/dtos/count-product.dto';
+import { UpdateCategoryDto } from './dtos/update-category.dto';
 
 @Injectable()
 export class CategoryService {
@@ -108,6 +109,18 @@ export class CategoryService {
             ...category,
         });
     }
+
+    async editCategory(
+        categoryId: string,
+        updateCategory: UpdateCategoryDto,
+      ): Promise<CategoryEntity> {
+        const category = await this.findCategoryById(categoryId);
+    
+        return this.categoryRepository.save({
+          ...category,
+          ...updateCategory,
+        });
+      }
 
     async delete(id: string): Promise<DeleteResult> {
         if (!isUUID(id)) {

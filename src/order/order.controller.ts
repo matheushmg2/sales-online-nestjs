@@ -36,7 +36,7 @@ export class OrderController {
         return this.orderService.findOrderByUserId(userId);
     }
 
-    @Roles(UserType.Admin)
+    @Roles(UserType.Admin, UserType.Root)
     @Get('/all')
     async findAllOrder(): Promise<OrderDataDto[]> {
         return (await this.orderService.findAllOrders()).map(
@@ -44,7 +44,7 @@ export class OrderController {
         );
     }
 
-    @Roles(UserType.Admin)
+    @Roles(UserType.Admin, UserType.Root)
     @Get('/:orderId')
     async findOrderById(
         @Param('orderId') orderId: string,
