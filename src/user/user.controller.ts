@@ -21,7 +21,7 @@ import { UserType } from './enum/user-type.enum';
 export class UserController {
     constructor(private readonly userService: UserService) {}
 
-    @Roles(UserType.Admin)
+    @Roles(UserType.Admin, UserType.Root)
     @Get("/all")
     async getAllUser(): Promise<UserDataDto[]> {
         return (await this.userService.getAllUser()).map(
@@ -29,18 +29,26 @@ export class UserController {
         );
     }
 
-    @Roles(UserType.Admin)
+    @Roles(UserType.Admin, UserType.Root)
     @Get('/:userId')
     async getUserById(@Param('userId') userId: string): Promise<UserDataDto> {
         return new UserDataDto(
             await this.userService.getUserByIdUsingRelations(userId),
         );
     }
+    
 
     @UsePipes(ValidationPipe)
     @Post()
     async create(@Body() create: CreateUserDto): Promise<UserEntity> {
         return this.userService.create(create);
+    }
+
+    @UsePipes(ValidationPipe)
+    @Roles(UserType.Root)
+    @Post("/admin")
+    async createAdmin(@Body() create: CreateUserDto): Promise<UserEntity> {
+        return this.userService.create(create, true);
     }
 
     @UsePipes(ValidationPipe)
@@ -52,7 +60,7 @@ export class UserController {
         return this.userService.updatePassword(update, userId);
     }
 
-    @Roles(UserType.Admin, UserType.User)
+    @Roles(UserType.Admin, UserType.Root, UserType.User)
     @Get()
     async getInfoUser(@UserId() userId: string): Promise<UserDataDto> {
         return new UserDataDto(

@@ -52,20 +52,4 @@ export class CorreiosService {
 
         return new DataCepDto(returnCep, city);
     }
-
-    create(createCorreioDto: CreateCorreioDto) {
-        return 'This action adds a new correio';
-    }
-
-    findOne(id: number) {
-        return `This action returns a #${id} correio`;
-    }
-
-    update(id: number, updateCorreioDto: UpdateCorreioDto) {
-        return `This action updates a #${id} correio`;
-    }
-
-    remove(id: number) {
-        return `This action removes a #${id} correio`;
-    }
 }
