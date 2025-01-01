@@ -10,7 +10,4 @@ export class UpdateProductDto {
 
     @IsNumber()
     price: number;
-
-    @IsString()
-    image: string;
 }

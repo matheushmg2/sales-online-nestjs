@@ -9,7 +9,7 @@ export const productEntityMock: ProductEntity = {
     categoryId: categoryEntityMock.id,
     name: 'name product mock',
     price: 10,
-    image: 'http://image.com',
+    imageId: uuidv4(),
     createdAt: new Date(),
     updatedAt: new Date(),
 };

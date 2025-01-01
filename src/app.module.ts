@@ -18,6 +18,7 @@ import { CartProductModule } from './cart-product/cart-product.module';
 import { OrderModule } from './order/order.module';
 import { OrderProductModule } from './order-product/order-product.module';
 import { CorreiosModule } from './correios/correios.module';
+import { ImagesModule } from './images/images.module';
 
 @Module({
   imports: [
@@ -38,7 +39,8 @@ import { CorreiosModule } from './correios/correios.module';
     CartProductModule,
     OrderModule,
     OrderProductModule,
-    CorreiosModule
+    CorreiosModule,
+    ImagesModule
   ],
   controllers: [],
   providers: [
