@@ -14,6 +14,9 @@ import { UpdateProductDto } from './dtos/update.dto';
 import { isUUID } from 'class-validator';
 import { CountProduct } from './dtos/count-product.dto';
 import { Pagination, PaginationMeta } from '../pagination/pagination.dto';
+import { ImagesService } from '../images/images.service';
+import { Request } from 'express';
+import { ProductDataDto } from './dtos/data.dto';
 
 const DEFAULT_PAGE_SIZE = 10;
 const FIRST_PAGE = 1;
@@ -26,6 +29,8 @@ export class ProductService {
 
         @Inject(forwardRef(() => CategoryService))
         private readonly categoryService: CategoryService,
+
+        private readonly imagesService: ImagesService,
     ) {}
 
     async findAllProduct(
@@ -56,6 +61,7 @@ export class ProductService {
                 ...findOptions,
                 relations: {
                     categories: true,
+                    images: true,
                 },
             };
         }
@@ -73,32 +79,35 @@ export class ProductService {
         search?: string,
         size = DEFAULT_PAGE_SIZE,
         page = FIRST_PAGE,
-      ): Promise<Pagination<ProductEntity[]>> {
+    ): Promise<Pagination<ProductDataDto[]>> {
         const skip = (page - 1) * size;
         let findOptions = {};
         if (search) {
-          findOptions = {
-            where: {
-              name: ILike(`%${search}%`),
-            },
-          };
+            findOptions = {
+                where: {
+                    name: ILike(`%${search}%`),
+                },
+            };
         }
-        const [products, total] = await this.productRepository.findAndCount({
-          ...findOptions,
-          take: size,
-          skip,
+        const [product, total] = await this.productRepository.findAndCount({
+            ...findOptions,
+            take: size,
+            skip,
+            relations: ['images', 'categories'],
         });
-    
+
+        const products = product.map((data) => new ProductDataDto(data));
+
         return new Pagination(
-          new PaginationMeta(
-            Number(size),
-            total,
-            Number(page),
-            Math.ceil(total / size),
-          ),
-          products,
+            new PaginationMeta(
+                Number(size),
+                total,
+                Number(page),
+                Math.ceil(total / size),
+            ),
+            products,
         );
-      }
+    }
 
     async findProductById(
         id: string,
@@ -111,6 +120,7 @@ export class ProductService {
         const relations = isRelactions
             ? {
                   categories: true,
+                  images: true,
               }
             : undefined;
 
@@ -136,26 +146,44 @@ export class ProductService {
             .getRawMany();
     }
 
-    async create(product: CreateProductDto): Promise<ProductEntity> {
-        await this.categoryService.findCategoryById(product.categoryId);
+    async create(req: Request): Promise<ProductEntity> {
+        const { file, body } = await this.imagesService.handleFileUploadAll(
+            req,
+            'Product',
+        );
+
+        const image = await this.imagesService.create(file);
+
+        const { categoryId, name, price } = body;
+
+        const newProduct = {
+            categoryId,
+            name,
+            price: Number(price),
+            imageId: image.id,
+        };
 
         return this.productRepository.save({
-            ...product,
+            ...newProduct,
         });
     }
 
-    async update(
-        data: UpdateProductDto,
-        productId: string,
-    ): Promise<ProductEntity> {
+    async update(data: UpdateProductDto, productId: string): Promise<ProductEntity> {
         if (!isUUID(productId)) {
             throw new BadRequestException('Product Not Found');
         }
         const product = await this.findProductById(productId);
 
+        const newProduct = {
+            categoryId: data.categoryId,
+            name: data.name,
+            price: Number(data.price),
+            imageId: product.imageId,
+        };
+
         return this.productRepository.save({
             ...product,
-            ...data,
+            ...newProduct,
         });
     }
 

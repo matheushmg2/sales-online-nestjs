@@ -7,6 +7,7 @@ import {
     Post,
     Put,
     Query,
+    Req,
     UsePipes,
     ValidationPipe,
 } from '@nestjs/common';
@@ -19,6 +20,7 @@ import { UserType } from '../user/enum/user-type.enum';
 import { DeleteResult } from 'typeorm';
 import { UpdateProductDto } from './dtos/update.dto';
 import { Pagination } from '../pagination/pagination.dto';
+import { Request } from 'express';
 
 @Roles(UserType.Admin, UserType.Root, UserType.User)
 @Controller('product')
@@ -38,7 +40,7 @@ export class ProductController {
         @Query('search') search?: string,
         @Query('size') size?: number,
         @Query('page') page?: number,
-    ): Promise<Pagination<ProductEntity[]>> {
+    ): Promise<Pagination<ProductDataDto[]>> {
         return this.productService.findAllPage(search, size, page);
     }
 
@@ -54,8 +56,8 @@ export class ProductController {
     @Roles(UserType.Admin, UserType.Root)
     @UsePipes(ValidationPipe)
     @Post()
-    async create(@Body() create: CreateProductDto): Promise<ProductEntity> {
-        return this.productService.create(create);
+    async create(@Req() req: Request): Promise<ProductEntity> {
+        return this.productService.create(req);
     }
 
     @Roles(UserType.Admin, UserType.Root)
