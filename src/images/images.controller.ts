@@ -2,24 +2,12 @@ import {
     Controller,
     Get,
     Post,
-    Body,
-    Patch,
     Param,
     Delete,
-    UseInterceptors,
-    UploadedFile,
     Req,
-    Res,
 } from '@nestjs/common';
 import { ImagesService } from './images.service';
-import { CreateImageDto } from './dto/create-image.dto';
-import { UpdateImageDto } from './dto/update-image.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { Request, Response } from 'express';
-import { ImagesCloudinary } from '../utils/cloudinary.config';
-import multer from 'multer';
-
-const upload = multer({ storage: ImagesCloudinary.getStorage('Images') });
+import { Request } from 'express';
 
 @Controller('images')
 export class ImagesController {
@@ -40,12 +28,13 @@ export class ImagesController {
     }
 
     @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.imagesService.findOne(+id);
+    findImageById(@Param('id') id: string) {
+        return this.imagesService.findImageById(id);
     }
 
-    @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.imagesService.remove(+id);
+    @Delete(':publicId')
+    async remove(@Param('publicId') id: string) {
+        await this.imagesService.remove(id);
+        return `Image with publicId ${id} deleted successfully`;
     }
 }
