@@ -10,13 +10,15 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export class ImagesCloudinary {
+export { cloudinary };
 
+export class ImagesCloudinary {
     static getStorage(diretorio: string) {
         if (!diretorio) {
-            throw new NotFoundException('Invalid. You need to name a directory!');
+            throw new NotFoundException(
+                'Invalid. You need to name a directory!',
+            );
         }
-
 
         return new CloudinaryStorage({
             cloudinary: cloudinary,
@@ -26,7 +28,9 @@ export class ImagesCloudinary {
                     .match(/\.(png|jpg|jpeg)$/);
 
                 if (!fileExtension) {
-                    throw new NotFoundException('Invalid file type. Only images are allowed!');
+                    throw new NotFoundException(
+                        'Invalid file type. Only images are allowed!',
+                    );
                 }
 
                 const baseName = file.originalname.split('.')[0];

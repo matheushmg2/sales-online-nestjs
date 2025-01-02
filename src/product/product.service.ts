@@ -168,7 +168,10 @@ export class ProductService {
         });
     }
 
-    async update(data: UpdateProductDto, productId: string): Promise<ProductEntity> {
+    async update(
+        data: UpdateProductDto,
+        productId: string,
+    ): Promise<ProductEntity> {
         if (!isUUID(productId)) {
             throw new BadRequestException('Product Not Found');
         }
@@ -187,12 +190,17 @@ export class ProductService {
         });
     }
 
-    async delete(id: string): Promise<DeleteResult> {
+    async delete(id: string): Promise<any> {
         if (!isUUID(id)) {
             throw new BadRequestException('Product Not Found');
         }
-        const product = await this.findProductById(id);
+        const { imageId } = await this.findProductById(id);
 
-        return this.productRepository.delete({ id: product.id });
+        await this.imagesService.findImageById(imageId);
+
+        return {
+            statusCode: 200,
+            message: 'Product removed successfully',
+        };
     }
 }

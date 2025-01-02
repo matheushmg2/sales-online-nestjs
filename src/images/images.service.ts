@@ -1,14 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { CreateImageDto } from './dto/create-image.dto';
 
-import { ImagesCloudinary } from '../utils/cloudinary.config';
+import { cloudinary, ImagesCloudinary } from '../utils/cloudinary.config';
 import multer from 'multer';
 
 import 'dotenv/config';
 import { Request } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ImageEntity } from './entities/image.entity';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class ImagesService {
@@ -86,12 +91,28 @@ export class ImagesService {
         });
     }
 
+    async findImageById(id: string): Promise<any> {
+        if (!isUUID(id)) {
+            throw new BadRequestException('Image Not Found');
+        }
+
+        const image = await this.imageRepository.findOne({
+            where: {
+                id,
+            },
+        });
+
+        if (!image) {
+            throw new NotFoundException('Image not found');
+        }
+
+        return image;
+    }
+
     async create(file: Express.Multer.File) {
         if (!file) {
             throw new NotFoundException('File is required for upload');
         }
-
-        console.log(file);
 
         const newImage: CreateImageDto = this.imageRepository.create({
             name: file.originalname,
@@ -99,7 +120,6 @@ export class ImagesService {
             size: file.size,
             url: file.path,
         });
-        console.log(newImage);
 
         return await this.imageRepository.save(newImage);
     }
@@ -112,7 +132,19 @@ export class ImagesService {
         return `This action returns a #${id} image`;
     }
 
-    remove(id: number) {
-        return `This action removes a #${id} image`;
+    async remove(publicId: string): Promise<any> {
+        try {
+            const { id, key } = await this.findImageById(publicId);
+
+            const result = await cloudinary.uploader.destroy(key);
+            if (result.result !== 'ok') {
+                throw new Error(`Failed to delete image with publicId: ${key}`);
+            }
+
+            return this.imageRepository.delete({ id: id });
+        } catch (error) {
+            console.error('Error deleting image:', error.message);
+            throw new Error('Error deleting image');
+        }
     }
 }
